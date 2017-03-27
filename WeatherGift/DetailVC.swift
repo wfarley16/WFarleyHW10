@@ -31,14 +31,27 @@ class DetailVC: UIViewController {
         if currentPage == 0 {
             getLocation()
         }
-
-        updateUserInterface()
+        
+        locationsArray[currentPage].getWeather {
+            self.updateUserInterface()
+        }
         
     }
     
     func updateUserInterface() {
+        
+        var isHidden = (locationsArray[currentPage].currentTemperature == -999.0)
+        
+        tempLabel.isHidden = isHidden
+        locationLabel.isHidden = isHidden
+        
         locationLabel.text = locationsArray[currentPage].name
         dateLabel.text = locationsArray[currentPage].coordinates
+        
+        let currentTemp = String(format: "%3.f", locationsArray[currentPage].currentTemperature) + "°"
+        
+        tempLabel.text = currentTemp
+        summaryLabel.text = locationsArray[currentPage].summary
     }
 
 }
@@ -78,9 +91,7 @@ extension DetailVC: CLLocationManagerDelegate {
         
         let currentLat = "\(currentLocation.coordinate.latitude)"
         let currentLong = "\(currentLocation.coordinate.longitude)"
-        
-        print("Coordinates are: " + currentLat + currentLong)
-        
+            
         var place = ""
         
         geocoder.reverseGeocodeLocation(currentLocation, completionHandler: {placemarks, error in
@@ -91,10 +102,10 @@ extension DetailVC: CLLocationManagerDelegate {
                 print("Error retrieving place. Error code: \(error)")
             }
             
-            print(place)
             self.locationsArray[0].name = place
-            self.locationsArray[0].coordinates = currentLat + " , " + currentLong
-            self.updateUserInterface()
+            self.locationsArray[0].coordinates = currentLat + "," + currentLong
+            self.locationsArray[0].getWeather { self.updateUserInterface() }
+            
         })
         
         }
