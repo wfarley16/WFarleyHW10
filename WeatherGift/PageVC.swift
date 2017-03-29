@@ -23,10 +23,13 @@ class PageVC: UIPageViewController {
         delegate = self
         dataSource = self
         
-        var newLocation = WeatherLocation()
+        let newLocation = WeatherLocation()
         newLocation.name = "Unknown Weather Location"
-        
-        locationsArray.append(newLocation)
+        if locationsArray.count == 0 {
+            locationsArray.append(newLocation)
+        } else {
+            locationsArray[0] = newLocation
+        }
         
         setViewControllers([createDetailVC(forPage: 0)], direction: .forward, animated: false, completion: nil)
         
@@ -88,12 +91,12 @@ class PageVC: UIPageViewController {
         
         currentPage = min(max(0, page), locationsArray.count-1)
         
-        let detailVC = storyboard!.instantiateViewController(withIdentifier: "DetailVC") as? DetailVC
+        let detailVC = storyboard!.instantiateViewController(withIdentifier: "DetailVC") as! DetailVC
             
-        detailVC!.currentPage = currentPage
-        detailVC!.locationsArray = locationsArray
-            
-        return detailVC!
+        detailVC.currentPage = currentPage
+        detailVC.locationsArray = locationsArray
+        
+        return detailVC
             
         }
     

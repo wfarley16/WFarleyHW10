@@ -11,15 +11,14 @@ import CoreLocation
 
 class DetailVC: UIViewController {
     
-    var currentPage = 0
-    var locationsArray = [WeatherLocation]()
-    
     @IBOutlet weak var dateLabel: UILabel!
     @IBOutlet weak var locationLabel: UILabel!
     @IBOutlet weak var tempLabel: UILabel!
     @IBOutlet weak var summaryLabel: UILabel!
     @IBOutlet weak var currentImage: UIImageView!
     
+    var currentPage = 0
+    var locationsArray = [WeatherLocation]()
     let locationManager = CLLocationManager()
     var currentLocation: CLLocation!
     
@@ -40,7 +39,7 @@ class DetailVC: UIViewController {
     
     func updateUserInterface() {
         
-        var isHidden = (locationsArray[currentPage].currentTemperature == -999.0)
+        let isHidden = (locationsArray[currentPage].currentTemperature == -999.0)
         
         tempLabel.isHidden = isHidden
         locationLabel.isHidden = isHidden
@@ -100,11 +99,14 @@ extension DetailVC: CLLocationManagerDelegate {
                 place = (placemark?.name!)!
             } else {
                 print("Error retrieving place. Error code: \(error)")
+                place = "Parts Unknown"
             }
             
             self.locationsArray[0].name = place
             self.locationsArray[0].coordinates = currentLat + "," + currentLong
-            self.locationsArray[0].getWeather { self.updateUserInterface() }
+            self.locationsArray[0].getWeather {
+                self.updateUserInterface()
+            }
             
         })
         

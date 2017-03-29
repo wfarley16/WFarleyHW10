@@ -14,7 +14,7 @@ class ListVC: UIViewController {
     @IBOutlet weak var tableView: UITableView!
     
     var locationsArray = [WeatherLocation]()
-    var currentPage: Int!
+    var currentPage = 0
 
     @IBOutlet weak var editBarButton: UIBarButtonItem!
     @IBOutlet weak var addBarButton: UIBarButtonItem!
@@ -75,7 +75,7 @@ extension ListVC: UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-            // This won't occur. Cell triggers a segue.
+            currentPage = indexPath.row
     }
     
     //MARK: - TableView Editing Functions
@@ -116,13 +116,13 @@ extension ListVC: UITableViewDelegate, UITableViewDataSource {
     
     func updateTable(place: GMSPlace) {
         
-        var newLocation = WeatherLocation()
+        let newLocation = WeatherLocation()
         newLocation.name = place.name
         
         let lat = place.coordinate.latitude
         let long = place.coordinate.longitude
         
-        newLocation.coordinates = "\(lat), \(long)"
+        newLocation.coordinates = "\(lat),\(long)"
         
         locationsArray.append(newLocation)
         
@@ -136,9 +136,10 @@ extension ListVC: GMSAutocompleteViewControllerDelegate {
     // Handle the user's selection.
     func viewController(_ viewController: GMSAutocompleteViewController, didAutocompleteWith place: GMSPlace) {
         
-        updateTable(place: place)
-        
         dismiss(animated: true, completion: nil)
+        
+        updateTable(place: place)
+
     }
     
     func viewController(_ viewController: GMSAutocompleteViewController, didFailAutocompleteWithError error: Error) {
