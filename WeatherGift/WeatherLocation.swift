@@ -66,9 +66,8 @@ class WeatherLocation {
             case .failure(let error):
                 print(error)
             }
+            completed()
         }
-        
-        completed()
     }
 }
 

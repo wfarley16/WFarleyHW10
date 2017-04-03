@@ -59,7 +59,7 @@ class DetailVC: UIViewController {
         tableView.reloadData()
     }
     
-    func formatTimeForTimeZone(unixDateToFormat: TimeInterval, timeZoneString: String) -> String{
+    func formatTimeForTimeZone(unixDateToFormat: TimeInterval, timeZoneString: String) -> String {
         let usableDate = Date(timeIntervalSince1970: unixDateToFormat)
         let dateFormatter = DateFormatter()
         
