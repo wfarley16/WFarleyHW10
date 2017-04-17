@@ -17,6 +17,7 @@ class DetailVC: UIViewController {
     @IBOutlet weak var summaryLabel: UILabel!
     @IBOutlet weak var currentImage: UIImageView!
     @IBOutlet weak var tableView: UITableView!
+    @IBOutlet weak var collectionView: UICollectionView!
     
     var currentPage = 0
     var locationsArray = [WeatherLocation]()
@@ -30,6 +31,9 @@ class DetailVC: UIViewController {
         
         tableView.delegate = self
         tableView.dataSource = self
+        
+        collectionView.delegate = self
+        collectionView.dataSource = self
         
         if currentPage == 0 {
             getLocation()
@@ -57,6 +61,7 @@ class DetailVC: UIViewController {
         currentImage.image = UIImage(named: locationsArray[currentPage].currentIcon)
         dateLabel.text = formatTimeForTimeZone(unixDateToFormat: locationsArray[currentPage].currentTime, timeZoneString: locationsArray[currentPage].timeZone)
         tableView.reloadData()
+        collectionView.reloadData()
     }
     
     func formatTimeForTimeZone(unixDateToFormat: TimeInterval, timeZoneString: String) -> String {
@@ -155,6 +160,26 @@ extension DetailVC: UITableViewDelegate, UITableViewDataSource {
     }
     
 }
+
+
+extension DetailVC: UICollectionViewDelegate, UICollectionViewDataSource {
+    
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return locationsArray[currentPage].hourlyForecastArray.count
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let hourlyCell = collectionView.dequeueReusableCell(withReuseIdentifier: "HourlyCell", for: indexPath) as! HourlyWeatherCell
+        hourlyCell.configureCVCell(hourlyForecast: self.locationsArray[currentPage].hourlyForecastArray[indexPath.row], timeZone: self.locationsArray[currentPage].timeZone)
+        return hourlyCell
+    }
+    
+}
+
+
+
+
+
 
 
 

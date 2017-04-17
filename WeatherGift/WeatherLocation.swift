@@ -20,6 +20,13 @@ class WeatherLocation {
         var dailyIcon: String
     }
     
+    struct HourlyForecast {
+        var hourlyTime: Double
+        var hourlyIcon: String
+        var hourlyTemp: Double
+        var hourlyPrecipProb: Double
+    }
+    
     var name = ""
     var coordinates = ""
     var currentTemperature = -999.9
@@ -28,6 +35,7 @@ class WeatherLocation {
     var currentTime = 0.0
     var timeZone = ""
     var dailyForecastArray = [DailyForecast]()
+    var hourlyForecastArray = [HourlyForecast]()
     
     func getWeather(completed: @escaping () -> ()) {
         
@@ -54,6 +62,20 @@ class WeatherLocation {
                     self.dailyForecastArray.append(DailyForecast(dailyMaxTemp: maxTemp, dailyMinTemp: minTemp, dailySummary: dailySummary, dailyDate: dateValue, dailyIcon: iconName))
                 }
                 
+                let hourlyDataArray = json["hourly"]["data"]
+                
+                self.hourlyForecastArray = []
+                
+                let lastHour = min(hourlyDataArray.count-1, 24)
+                
+                for hour in 1...lastHour {
+                    let hourlyTime = json["hourly"]["data"][hour]["time"].doubleValue
+                    let hourlyIcon = json["hourly"]["data"][hour]["icon"].stringValue
+                    let hourlyTemp = json["hourly"]["data"][hour]["temperature"].doubleValue
+                    let hourlyPrecipProp = json["hourly"]["data"][hour]["precipProbability"].doubleValue
+                    self.hourlyForecastArray.append(HourlyForecast(hourlyTime: hourlyTime, hourlyIcon: hourlyIcon, hourlyTemp: hourlyTemp, hourlyPrecipProb: hourlyPrecipProp))
+                }
+                
                 if let temperature = json["currently"]["temperature"].double, let dailySummary = json["daily"]["summary"].string, let icon = json["currently"]["icon"].string, let time = json["currently"]["time"].double, let timeZone = json["timezone"].string {
                     self.currentTemperature = temperature
                     self.summary = dailySummary
@@ -63,6 +85,7 @@ class WeatherLocation {
                     } else {
                     print("Error returning json information")
                 }
+                
             case .failure(let error):
                 print(error)
             }
@@ -70,4 +93,11 @@ class WeatherLocation {
         }
     }
 }
+
+
+
+
+
+
+
 
