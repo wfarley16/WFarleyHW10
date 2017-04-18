@@ -35,14 +35,25 @@ class DetailVC: UIViewController {
         collectionView.delegate = self
         collectionView.dataSource = self
         
-        if currentPage == 0 {
-            getLocation()
-        }
-        
         locationsArray[currentPage].getWeather {
             self.updateUserInterface()
         }
         
+    }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        if currentPage == 0 && self.view.window != nil {
+            getLocation()
+        }
+    }
+    
+    func showAlert(title: String, message: String) {
+        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        let alertAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+        alertController.addAction(alertAction)
+        present(alertController, animated: true, completion: nil)
     }
     
     func updateUserInterface() {
@@ -59,7 +70,13 @@ class DetailVC: UIViewController {
         tempLabel.text = currentTemp
         summaryLabel.text = locationsArray[currentPage].summary
         currentImage.image = UIImage(named: locationsArray[currentPage].currentIcon)
-        dateLabel.text = formatTimeForTimeZone(unixDateToFormat: locationsArray[currentPage].currentTime, timeZoneString: locationsArray[currentPage].timeZone)
+        
+        if locationsArray[currentPage].currentTime == 0.0 {
+            dateLabel.text = ""
+        } else {
+            dateLabel.text = formatTimeForTimeZone(unixDateToFormat: locationsArray[currentPage].currentTime, timeZoneString: locationsArray[currentPage].timeZone)
+        }
+        
         tableView.reloadData()
         collectionView.reloadData()
     }
@@ -75,7 +92,7 @@ class DetailVC: UIViewController {
         
         return dateString
     }
-
+    
 }
 
 extension DetailVC: CLLocationManagerDelegate {
@@ -83,7 +100,7 @@ extension DetailVC: CLLocationManagerDelegate {
     func getLocation() {
         let status = CLLocationManager.authorizationStatus()
         handleLocationAuthorizationStatus(status: status)
-
+        
     }
     
     func handleLocationAuthorizationStatus(status: CLAuthorizationStatus) {
@@ -93,9 +110,11 @@ extension DetailVC: CLLocationManagerDelegate {
         case .authorizedWhenInUse, .authorizedAlways:
             locationManager.startUpdatingLocation()
         case .denied:
-            print("I'm sorry - I can't show location. User has not authorized it.")
+            if currentPage == 0 && self.view.window != nil {
+                showAlert(title: "User has not authorized location services", message: "Settings > Privacy > Location Services > WeatherGift to enable location services.")
+            }
         case .restricted:
-            print("Access denied - likelt parental controllers are restricting location use in this app.")
+            showAlert(title: "Location Services Denied", message: "Parental controls may be restricting location services.")
         }
     }
     
@@ -105,34 +124,34 @@ extension DetailVC: CLLocationManagerDelegate {
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         
-        if currentPage == 0 {
-        
-        let geocoder = CLGeocoder()
-        
-        currentLocation = locations.last
-        
-        let currentLat = "\(currentLocation.coordinate.latitude)"
-        let currentLong = "\(currentLocation.coordinate.longitude)"
+        if currentPage == 0 && self.view.window != nil {
             
-        var place = ""
-        
-        geocoder.reverseGeocodeLocation(currentLocation, completionHandler: {placemarks, error in
-            if placemarks != nil {
-                let placemark = placemarks!.last
-                place = (placemark?.name!)!
-            } else {
-                print("Error retrieving place. Error code: \(error)")
-                place = "Parts Unknown"
-            }
+            let geocoder = CLGeocoder()
             
-            self.locationsArray[0].name = place
-            self.locationsArray[0].coordinates = currentLat + "," + currentLong
-            self.locationsArray[0].getWeather {
-                self.updateUserInterface()
-            }
+            currentLocation = locations.last
             
-        })
-        
+            let currentLat = "\(currentLocation.coordinate.latitude)"
+            let currentLong = "\(currentLocation.coordinate.longitude)"
+            
+            var place = ""
+            
+            geocoder.reverseGeocodeLocation(currentLocation, completionHandler: {placemarks, error in
+                if placemarks != nil {
+                    let placemark = placemarks!.last
+                    place = (placemark?.name!)!
+                } else {
+                    print("Error retrieving place")
+                    place = "Parts Unknown"
+                }
+                
+                self.locationsArray[0].name = place
+                self.locationsArray[0].coordinates = currentLat + "," + currentLong
+                self.locationsArray[0].getWeather {
+                    self.updateUserInterface()
+                }
+                
+            })
+            
         }
         
         locationManager.stopUpdatingLocation()

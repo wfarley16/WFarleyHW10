@@ -58,6 +58,16 @@ class ListVC: UIViewController {
         autocompleteController.delegate = self
         present(autocompleteController, animated: true, completion: nil)
     }
+    
+    //MARK: - Save Changes to Locations Array
+    
+    func saveUserDefaults() {
+        var locationsDefaultsArray = [WeatherUserDefault]()
+        locationsDefaultsArray = locationsArray
+        let locationsData = NSKeyedArchiver.archivedData(withRootObject: locationsDefaultsArray)
+        UserDefaults.standard.set(locationsData, forKey: "locationsData")
+    }
+    
 }
 
 extension ListVC: UITableViewDelegate, UITableViewDataSource {
@@ -75,7 +85,7 @@ extension ListVC: UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-            currentPage = indexPath.row
+        currentPage = indexPath.row
     }
     
     //MARK: - TableView Editing Functions
@@ -85,6 +95,7 @@ extension ListVC: UITableViewDelegate, UITableViewDataSource {
         if editingStyle == .delete {
             locationsArray.remove(at: indexPath.row)
             tableView.deleteRows(at: [indexPath], with: .fade)
+            saveUserDefaults()
         }
         
     }
@@ -94,6 +105,7 @@ extension ListVC: UITableViewDelegate, UITableViewDataSource {
         let itemToMove = locationsArray[sourceIndexPath.row]
         locationsArray.remove(at: sourceIndexPath.row)
         locationsArray.insert(itemToMove, at: destinationIndexPath.row)
+        saveUserDefaults()
         
     }
     
@@ -127,6 +139,8 @@ extension ListVC: UITableViewDelegate, UITableViewDataSource {
         locationsArray.append(newLocation)
         
         tableView.reloadData()
+        
+        saveUserDefaults()
     }
     
 }
